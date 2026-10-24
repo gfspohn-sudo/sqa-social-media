@@ -17,9 +17,9 @@ public class PostService {
   private final RestTemplate restTemplate;
   private final ObjectMapper objectMapper;
 
-  public PostService(UserPostReactionRepository reactionRepository) {
+  public PostService(UserPostReactionRepository reactionRepository, RestTemplate restTemplate) {
     this.reactionRepository = reactionRepository;
-    this.restTemplate = new RestTemplate();
+    this.restTemplate = restTemplate;
     this.objectMapper = new ObjectMapper();
   }
 
