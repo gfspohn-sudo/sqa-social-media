@@ -70,6 +70,8 @@ class PostServiceTest {
     assertEquals(1L, posts.get(0).get("id"));
     assertEquals("Post 1", posts.get(0).get("title"));
     assertEquals("Corpo 1", posts.get(0).get("body"));
+    assertEquals(Map.of("likes", 192, "dislikes", 25), posts.get(0).get("reactions"));
+    assertEquals(Map.of("likes", 859, "dislikes", 32), posts.get(1).get("reactions"));
     assertEquals(251, result.get("total"));
     assertEquals(0, result.get("skip"));
     assertEquals(2, result.get("limit"));
@@ -105,6 +107,21 @@ class PostServiceTest {
   }
 
   @Test
+  @DisplayName("getPosts assume 0 curtidas/descurtidas quando o post não traz reactions")
+  @SuppressWarnings("unchecked")
+  void getPostsSemReactions() {
+    dummyJson.expect(requestTo("https://dummyjson.com/posts"))
+        .andRespond(withSuccess(
+            "{ \"posts\": [ { \"id\": 9, \"title\": \"T\", \"body\": \"B\" } ], \"total\": 1, \"skip\": 0, \"limit\": 1 }",
+            MediaType.APPLICATION_JSON));
+
+    Map<String, Object> result = postService.getPosts(null, null, null);
+
+    List<Map<String, Object>> posts = (List<Map<String, Object>>) result.get("posts");
+    assertEquals(Map.of("likes", 0, "dislikes", 0), posts.get(0).get("reactions"));
+  }
+
+  @Test
   @DisplayName("getPosts transforma falha do DummyJSON em RuntimeException")
   void getPostsErroExterno() {
     dummyJson.expect(requestTo("https://dummyjson.com/posts"))
@@ -131,6 +148,7 @@ class PostServiceTest {
     assertEquals(1, posts.size());
     assertEquals(3L, posts.get(0).get("id"));
     assertEquals(true, posts.get(0).get("liked"));
+    assertEquals(Map.of("likes", 10, "dislikes", 1), posts.get(0).get("reactions"));
     assertEquals(1, result.get("total"));
     assertEquals(5, result.get("limit"));
     assertEquals(0, result.get("skip"));

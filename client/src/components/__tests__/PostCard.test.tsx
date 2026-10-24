@@ -7,6 +7,7 @@ const POST: Post = {
   title: "Título do post",
   body: "Corpo do post",
   liked: false,
+  reactions: { likes: 192, dislikes: 25 },
 };
 
 describe("PostCard", () => {
@@ -26,6 +27,24 @@ describe("PostCard", () => {
     expect(screen.getByRole("heading", { name: "Título do post" })).toBeInTheDocument();
     expect(screen.getByText("Corpo do post")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Curtir/ })).toBeInTheDocument();
+  });
+
+  it("exibe o número de curtidas e descurtidas vindo de reactions", () => {
+    render(<PostCard post={POST} isAuthenticated={false} onLike={jest.fn()} />);
+
+    expect(screen.getByTestId("post-likes")).toHaveTextContent("192 curtidas");
+    expect(screen.getByTestId("post-dislikes")).toHaveTextContent("25 descurtidas");
+  });
+
+  it("curtir o post não altera os contadores do DummyJSON", async () => {
+    const onLike = jest.fn().mockResolvedValue(undefined);
+    render(<PostCard post={POST} isAuthenticated onLike={onLike} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Curtir/ }));
+    await screen.findByRole("button", { name: /Curtido/ });
+
+    expect(screen.getByTestId("post-likes")).toHaveTextContent("192 curtidas");
+    expect(screen.getByTestId("post-dislikes")).toHaveTextContent("25 descurtidas");
   });
 
   it("mostra Curtido quando o post já vem curtido", () => {

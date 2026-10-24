@@ -21,6 +21,24 @@ test.describe('API - Posts (/posts)', () => {
         title: expect.any(String),
         body: expect.any(String),
         liked: false,
+        reactions: { likes: expect.any(Number), dislikes: expect.any(Number) },
+      });
+    }
+  });
+
+  test('GET /posts devolve as reações (likes/dislikes) iguais às do DummyJSON', async ({ request }) => {
+    const response = await request.get('/posts', { params: { limit: 3, skip: 0 } });
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+
+    // Fonte da verdade: a própria API pública do DummyJSON
+    const dummy = await (await request.get('https://dummyjson.com/posts', { params: { limit: 3, skip: 0 } })).json();
+
+    for (const [i, post] of body.posts.entries()) {
+      expect(post.id).toBe(dummy.posts[i].id);
+      expect(post.reactions).toEqual({
+        likes: dummy.posts[i].reactions.likes,
+        dislikes: dummy.posts[i].reactions.dislikes,
       });
     }
   });
@@ -39,7 +57,11 @@ test.describe('API - Posts (/posts)', () => {
     expect(liked.status()).toBe(200);
     const likedBody = await liked.json();
     expect(likedBody.total).toBe(1);
-    expect(likedBody.posts[0]).toMatchObject({ id: postId, liked: true });
+    expect(likedBody.posts[0]).toMatchObject({
+      id: postId,
+      liked: true,
+      reactions: { likes: expect.any(Number), dislikes: expect.any(Number) },
+    });
 
     // 2ª chamada no mesmo post: descurte
     const unlike = await request.post(`/posts/${postId}/like`, { params: { userId: user.id } });
