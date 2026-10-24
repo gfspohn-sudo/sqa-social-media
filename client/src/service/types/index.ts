@@ -22,11 +22,17 @@ export interface ResetPasswordRequest {
   email: string;
 }
 
+export interface PostReactions {
+  likes: number;
+  dislikes: number;
+}
+
 export interface Post {
   id: number;
   title: string;
   body: string;
   liked: boolean;
+  reactions: PostReactions;
 }
 
 export interface PostsResponse {

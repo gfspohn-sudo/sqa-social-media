@@ -61,7 +61,8 @@ public class PostService {
         post.put("title", postNode.get("title").asText());
         post.put("body", postNode.get("body").asText());
         post.put("liked", likedPostIds.contains(postId));
-        
+        post.put("reactions", mapReactions(postNode));
+
         posts.add(post);
       }
 
@@ -76,6 +77,17 @@ public class PostService {
     } catch (Exception e) {
       throw new RuntimeException("Erro ao buscar posts: " + e.getMessage(), e);
     }
+  }
+
+  // Repassa o objeto "reactions" do DummyJSON ({ likes, dislikes }); sem ele, assume 0
+  private Map<String, Integer> mapReactions(JsonNode postNode) {
+    JsonNode reactionsNode = postNode.path("reactions");
+
+    Map<String, Integer> reactions = new HashMap<>();
+    reactions.put("likes", reactionsNode.path("likes").asInt(0));
+    reactions.put("dislikes", reactionsNode.path("dislikes").asInt(0));
+
+    return reactions;
   }
 
   public Map<String, Object> getLikedPosts(Long userId, Integer limit, Integer skip) {
@@ -108,7 +120,8 @@ public class PostService {
         post.put("title", postNode.get("title").asText());
         post.put("body", postNode.get("body").asText());
         post.put("liked", true);
-        
+        post.put("reactions", mapReactions(postNode));
+
         posts.add(post);
       }
 
